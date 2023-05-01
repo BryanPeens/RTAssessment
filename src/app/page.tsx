@@ -1,11 +1,21 @@
 import Image from 'next/image'
 import { Inter } from 'next/font/google'
+import { google } from 'googleapis';
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+export default async function Home() {
+  
+  const data = await getData();
+  const name = data.data[0][0]
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
+
+      <div>
+        {name}
+      </div>
+
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
         <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           Get started by editing&nbsp;
@@ -113,4 +123,26 @@ export default function Home() {
       </div>
     </main>
   )
+}
+
+async function getData() {
+  const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] });
+
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  // const range = `Sheet1!A${id}:C${id}`;
+  const range = `sample_data!A2:F2`;
+
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: process.env.SHEET_ID,
+    range,
+  });
+
+  // console.log(response)
+  // console.log(response.data)
+  // console.log(response.data.values)
+  
+  return {
+    data: response.data.values as string[][]
+  };
 }
